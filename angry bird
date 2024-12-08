@@ -1,0 +1,108 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Angry Bird House")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+GRAY = (200, 200, 200)
+
+# Clock
+clock = pygame.time.Clock()
+
+# Bird class
+class Bird:
+    def __init__(self, color, x, y):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.radius = 20
+        self.is_in_house = True
+        self.is_thrown = False
+        self.velocity = [random.choice([-5, 5]), random.choice([-5, 5])]
+
+    def draw(self):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+
+    def move(self):
+        if not self.is_in_house and self.is_thrown:
+            self.x += self.velocity[0]
+            self.y += self.velocity[1]
+
+            # Bounce off the walls
+            if self.x - self.radius < 0 or self.x + self.radius > SCREEN_WIDTH:
+                self.velocity[0] = -self.velocity[0]
+            if self.y - self.radius < 0 or self.y + self.radius > SCREEN_HEIGHT:
+                self.velocity[1] = -self.velocity[1]
+
+# House class
+class House:
+    def __init__(self, color, x, y):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = 100
+        self.height = 100
+
+    def draw(self):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+
+# Create birds and houses
+birds = [
+    Bird(RED, 150, 450),
+    Bird(BLUE, 350, 450),
+    Bird(YELLOW, 550, 450)
+]
+
+houses = [
+    House(GRAY, 100, 400),
+    House(GRAY, 300, 400),
+    House(GRAY, 500, 400)
+]
+
+# Main game loop
+running = True
+while running:
+    screen.fill(WHITE)
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:  # Red bird leaves house
+                birds[0].is_in_house = False
+                birds[0].is_thrown = True
+            elif event.key == pygame.K_2:  # Blue bird leaves house
+                birds[1].is_in_house = False
+                birds[1].is_thrown = True
+            elif event.key == pygame.K_3:  # Yellow bird leaves house
+                birds[2].is_in_house = False
+                birds[2].is_thrown = True
+
+    # Draw houses
+    for house in houses:
+        house.draw()
+
+    # Update and draw birds
+    for bird in birds:
+        if bird.is_in_house:
+            bird.x = houses[birds.index(bird)].x + 50  # Center in house
+            bird.y = houses[birds.index(bird)].y + 50
+        bird.move()
+        bird.draw()
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
